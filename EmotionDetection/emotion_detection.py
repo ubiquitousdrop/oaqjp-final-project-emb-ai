@@ -6,14 +6,17 @@ def emotion_detector(text_to_analyze: str) -> dict:
     Sends text to Watson NLP EmotionPredict endpoint and returns a dictionary with
     anger, disgust, fear, joy, sadness scores and the dominant_emotion.
 
+    If the server returns status code 400 (e.g., blank input), returns a dictionary
+    with all values set to None.
+
     Output format:
     {
-        'anger': <float>,
-        'disgust': <float>,
-        'fear': <float>,
-        'joy': <float>,
-        'sadness': <float>,
-        'dominant_emotion': '<name of the dominant emotion>'
+        'anger': <float or None>,
+        'disgust': <float or None>,
+        'fear': <float or None>,
+        'joy': <float or None>,
+        'sadness': <float or None>,
+        'dominant_emotion': <str or None>
     }
     """
     url = "https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict"
@@ -27,6 +30,18 @@ def emotion_detector(text_to_analyze: str) -> dict:
     }
 
     response = requests.post(url, headers=headers, json=payload)
+
+    # Handle blank input / bad request
+    if response.status_code == 400:
+        return {
+            "anger": None,
+            "disgust": None,
+            "fear": None,
+            "joy": None,
+            "sadness": None,
+            "dominant_emotion": None,
+        }
+
     response.raise_for_status()
 
     data = response.json()
